@@ -1,0 +1,109 @@
+/* app/dashboard/tools/page.module.css */
+
+.wrapper { 
+  min-height: 100vh; 
+  padding: 32px;
+  background: var(--clr-bg);
+}
+
+.header { margin-bottom: 40px; }
+.title { font-size: 2.2rem; margin-bottom: 8px; font-family: var(--font-heading); font-weight: 800; }
+.desc { color: var(--clr-muted); font-size: 1rem; max-width: 600px; line-height: 1.6; }
+
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.toolCard {
+  background: var(--clr-panel);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+}
+
+.toolCard:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+  border-color: rgba(255,255,255,0.1);
+}
+
+/* Pricing Overlays / Locks */
+.lockedOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 11, 16, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10;
+  text-align: center;
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.toolCard.locked:hover .lockedOverlay { opacity: 1; }
+
+.lockIcon { color: var(--clr-muted); margin-bottom: 8px; }
+.lockMsg { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: #fff; }
+.lockDesc { font-size: 0.85rem; color: var(--clr-muted); margin-bottom: 12px; }
+
+.tierBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-weight: 800;
+}
+.tierBadge.pro { background: rgba(0,212,255,0.1); color: var(--clr-blue); border: 1px solid rgba(0,212,255,0.3); }
+.tierBadge.elite { background: rgba(255,215,0,0.1); color: #ffd700; border: 1px solid rgba(255,215,0,0.3); }
+
+.toolIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: var(--clr-accent);
+}
+
+.toolTitle { font-size: 1.3rem; margin-bottom: 12px; font-family: var(--font-heading); font-weight: 700; }
+.toolDesc { color: var(--clr-muted); font-size: 0.95rem; line-height: 1.6; flex: 1; margin-bottom: 24px; }
+
+.toolAction {
+  padding: 12px;
+  width: 100%;
+  border-radius: 8px;
+  background: rgba(255,107,53,0.1);
+  color: var(--clr-accent);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255,107,53,0.2);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.toolAction:hover {
+  background: var(--clr-accent);
+  color: #fff;
+}

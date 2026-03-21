@@ -1,0 +1,98 @@
+/* app/dashboard/layout.module.css */
+
+.dashboardContainer {
+  display: flex;
+  min-height: 100vh;
+  background: var(--clr-bg);
+}
+
+.sidebar {
+  width: 280px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 32px 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+}
+
+.navSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  color: var(--clr-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.navItem svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--clr-text);
+  transform: translateX(4px);
+}
+
+.navItemActive {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--clr-accent);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+}
+
+.navItemActive svg {
+  stroke: var(--clr-accent);
+}
+
+.navSectionLabel {
+  padding: 16px 24px 8px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--clr-muted);
+  font-weight: 700;
+  opacity: 0.5;
+}
+
+.mainContent {
+  flex: 1;
+  background: var(--clr-bg);
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}

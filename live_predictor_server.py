@@ -1,12 +1,11 @@
-from flask import Flask, render_template_string, jsonify
+from flask import Flask, render_template_string, jsonify, request
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import eventlet
 import threading
 import time
-from sportpesa_scraper import SportpesaLiveScraper
+from multi_scraper import MultiExchangeAggregator
 from real_predictor import RealAviatorPredictor
-import redis
 
 eventlet.monkey_patch()
 
@@ -14,12 +13,31 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Global instances
-scraper = SportpesaLiveScraper()
+# Global instances (Phase 6 Architecture)
+aggregator = MultiExchangeAggregator()
 predictor = RealAviatorPredictor()
-redis_client = redis.Redis(host='localhost', port=6379, db=1)
 
-LIVE_DASHBOARD = """
+def _on_live_crash(provider: str, crash: float):
+    predictor.update(provider, crash)
+    pred = predictor.predict(provider=provider)
+    
+    socketio.emit('live_crash', {
+        'provider': provider,
+        'crash': crash
+    })
+    socketio.emit('live_prediction', pred) # pred already contains multi_timeframe and provider dict keys
+
+def _on_tick(provider: str, multiplier: float):
+    """Emit every in-flight multiplier tick across all interconnected brokers"""
+    socketio.emit('live_tick', {
+        'provider': provider,
+        'multiplier': multiplier
+    })
+
+aggregator.global_crash_callback = _on_live_crash
+aggregator.global_tick_callback  = _on_tick
+
+LIVE_DASHBOARD = r"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1573,6 +1591,17 @@ LIVE_DASHBOARD = """
                         <i class="fas fa-download btn-icon"></i>
                         <span class="btn-label">Extract Dataset</span>
                     </button>
+                    <button class="action-btn btn-secondary" onclick="toggleSimulation()" id="simBtn" style="background: rgba(155,89,182,0.2); border-color: var(--accent-purple);">
+                        <i class="fas fa-gamepad btn-icon" style="color: var(--accent-purple);"></i>
+                        <span class="btn-label" style="color: var(--accent-purple);">Start Simulation</span>
+                    </button>
+                </div>
+
+                <!-- Manual Entry -->
+                <div style="grid-column: span 12; display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; padding: 20px; background: rgba(255,107,53,0.05); border-radius: 20px; border: 1px dashed var(--accent-orange);">
+                    <div style="color: var(--accent-orange); font-weight: 600;"><i class="fas fa-keyboard"></i> Manual Entry:</div>
+                    <input type="number" id="manualCrash" step="0.01" class="input-field" placeholder="e.g. 2.45" style="width: 120px; text-align: center; border-color: rgba(255,107,53,0.3);">
+                    <button class="action-btn btn-primary" onclick="submitManualCrash()" style="padding: 10px 20px; font-size: 13px;">Submit</button>
                 </div>
             </div>
         </div>
@@ -2284,6 +2313,31 @@ Examples:
             console.log('Establishing neural link to SportPesa...');
         }
 
+        let isSimulationRunning = false;
+        function toggleSimulation() {
+            isSimulationRunning = !isSimulationRunning;
+            const btn = document.getElementById('simBtn');
+            if (isSimulationRunning) {
+                btn.style.background = 'rgba(239,83,80,0.2)';
+                btn.style.borderColor = 'var(--accent-red)';
+                btn.innerHTML = '<i class="fas fa-stop btn-icon" style="color: var(--accent-red);"></i><span class="btn-label" style="color: var(--accent-red);">Stop Simulation</span>';
+                socket.emit('toggle_simulation', {state: true});
+            } else {
+                btn.style.background = 'rgba(155,89,182,0.2)';
+                btn.style.borderColor = 'var(--accent-purple)';
+                btn.innerHTML = '<i class="fas fa-gamepad btn-icon" style="color: var(--accent-purple);"></i><span class="btn-label" style="color: var(--accent-purple);">Start Simulation</span>';
+                socket.emit('toggle_simulation', {state: false});
+            }
+        }
+
+        function submitManualCrash() {
+            const val = document.getElementById('manualCrash').value;
+            if (val && !isNaN(val)) {
+                socket.emit('manual_crash', {crash: parseFloat(val)});
+                document.getElementById('manualCrash').value = '';
+            }
+        }
+
         function forcePredict() {
             socket.emit('predict_now');
             console.log('Generating quantum forecast...');
@@ -2616,28 +2670,76 @@ def live_dashboard():
 
 @app.route('/api/live')
 def api_live():
-    stats = scraper.get_live_stats()
+    stats = aggregator.spribe.get_live_stats()
     return jsonify(stats)
 
+@app.route('/api/webhook', methods=['OPTIONS', 'POST'])
+def webhook_receiver():
+    if request.method == 'OPTIONS':
+        return '', 204
+        
+    data = request.json
+    if not data or 'multiplier' not in data:
+        return jsonify({'error': 'Invalid payload'}), 400
+        
+    crash = float(data['multiplier'])
+    
+    # Automatically triggers all our Redis, Math, and Stats updates seamlessly
+    aggregator.spribe.add_manual_crash(crash)
+    stats = aggregator.spribe.get_live_stats()
+    
+    socketio.emit('live_crash', {'provider': 'spribe', 'crash': crash})
+    socketio.emit('live_stats', stats)
+    
+    # Trigger deep learning prediction
+    predictor.update('spribe', crash)
+    pred = predictor.predict(provider='spribe')
+    socketio.emit('live_prediction', pred)
+    
+    return jsonify({'status': 'success', 'crash': crash})
+
 @socketio.on('start_scraper')
-def start_scraper():
-    if not scraper.running:
-        threading.Thread(target=scraper.connect, daemon=True).start()
-    emit('status', {'connected': scraper.running})
+def start_scraper(data=None):
+    """
+    Start live connection. Optionally pass:
+      { operator: "sportpesa", token: "<jwt>", user: "<uid>" }
+    """
+    if not aggregator.spribe.running:
+        operator = (data or {}).get('operator', 'sportpesa')
+        token    = (data or {}).get('token', None)
+        user     = (data or {}).get('user', 'player')
+        threading.Thread(
+            target=aggregator.spribe.connect,
+            kwargs={'operator': operator, 'token': token, 'user': user},
+            daemon=True
+        ).start()
+    emit('status', {'connected': aggregator.spribe.running, 'msg': 'Neural link established!'})
+
+@socketio.on('manual_crash')
+def handle_manual_crash(data):
+    crash = data.get('crash')
+    if crash:
+        aggregator.spribe.add_manual_crash(float(crash))  # callback fires automatically
+
+@socketio.on('toggle_simulation')
+def handle_simulation(data):
+    state = data.get('state', False)
+    aggregator.connect_all(simulate=state)
+    emit('status', {'simulation': state})
 
 @socketio.on('predict_now')
 def predict_live():
-    stats = scraper.get_live_stats()
-    pred = predictor.predict()
+    pred = predictor.predict(provider='spribe')
+    stats = aggregator.spribe.get_live_stats()
     emit('live_prediction', {**pred, **stats})
 
 def prediction_loop():
     """Live prediction every 10 seconds"""
     while True:
         time.sleep(10)
-        if scraper.live_crashes:
-            predictor.update(scraper.live_crashes[-1])
-            pred = predictor.predict()
+        if aggregator.spribe.live_crashes:
+            predictor.update('spribe', aggregator.spribe.live_crashes[-1])
+            pred = predictor.predict(provider='spribe')
             socketio.emit('live_prediction', pred)
 
 if __name__ == '__main__':

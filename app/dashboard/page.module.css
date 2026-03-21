@@ -1,0 +1,122 @@
+/* app/dashboard/page.module.css */
+
+.wrapper { min-height: 100vh; display: flex; flex-direction: column; background: var(--clr-bg); }
+
+/* Header */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  background: rgba(5,5,8,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--clr-border);
+  position: sticky; top: 0; z-index: 50;
+}
+.backLink { 
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.85rem; color: var(--clr-muted); 
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: color .2s; 
+}
+.backLink:hover { color: var(--clr-accent); }
+.logo { display: flex; gap: 10px; font-family: var(--font-heading); font-weight: 800; font-size: 1.25rem; align-items: center; }
+
+.connBadge {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 1px;
+  padding: 6px 16px; border-radius: 100px;
+  font-family: var(--font-heading);
+}
+.live    { background: rgba(0,255,136,0.1); color: var(--clr-green); border: 1px solid rgba(0,255,136,0.3); }
+.offline { background: rgba(138,143,156,0.1); color: var(--clr-muted); border: 1px solid rgba(138,143,156,0.3); }
+.connDot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor;
+  animation: pulse-glow 2s infinite;
+}
+
+/* Main */
+.main { flex: 1; padding: 32px; display: flex; flex-direction: column; gap: 24px; max-width: 1400px; width: 100%; margin: 0 auto; }
+
+/* Top Row */
+.topRow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+@media (max-width: 1024px) { .topRow { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px)  { .topRow { grid-template-columns: 1fr; } }
+
+/* Prediction Card */
+.predCard { display: flex; flex-direction: column; gap: 16px; justify-content: space-between; }
+.predLabel { font-size: 0.85rem; color: var(--clr-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.predValue {
+  font-family: var(--font-heading); font-size: 4rem; font-weight: 800; line-height: 1;
+  transition: color .5s; text-shadow: 0 4px 20px currentColor;
+}
+.predRange { font-size: 0.9rem; color: var(--clr-muted); font-weight: 600; }
+.predMeta  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+.metaItem  { display: flex; flex-direction: column; gap: 4px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; }
+.metaLbl   { font-size: 0.75rem; color: var(--clr-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.metaVal   { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--clr-text); }
+
+/* Action Card */
+.actionCard { display: flex; flex-direction: column; gap: 20px; }
+.actionHeader { display: flex; justify-content: space-between; gap: 16px; }
+.actionLbl  { font-size: 0.75rem; color: var(--clr-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 6px; }
+.actionRisk { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; transition: color .5s; }
+.actionBet  { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 800; transition: color .5s; }
+
+.signalsHeader { font-size: 0.8rem; color: var(--clr-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.signalItem {
+  font-size: 0.9rem; padding: 8px 12px; border-radius: 8px; font-weight: 500;
+  background: rgba(255,255,255,0.03); margin-bottom: 8px; border-left: 2px solid var(--clr-accent);
+}
+.cycleBadge {
+  font-size: 0.85rem; color: var(--clr-muted);
+  padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 8px; font-weight: 600;
+}
+
+/* Stats Card */
+.statsCard { display: flex; flex-direction: column; gap: 20px; }
+.statsTitle { font-size: 0.85rem; font-weight: 700; color: var(--clr-muted); text-transform: uppercase; letter-spacing: 1px; }
+.statsGrid  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.statItem   { display: flex; flex-direction: column; gap: 6px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; }
+.sLbl       { font-size: 0.75rem; color: var(--clr-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.sVal       { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--clr-text); }
+
+/* Crash History */
+.histCard { padding-bottom: 32px; flex: 1; }
+.histHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; font-size: 1.1rem; font-weight: 700; font-family: var(--font-heading); letter-spacing: 0.5px;
+}
+.flashBadge {
+  font-family: var(--font-mono); font-size: 1rem; font-weight: 800;
+  color: var(--clr-accent); padding: 8px 18px;
+  background: rgba(255,107,53,0.15); border-radius: 100px;
+  animation: fadeUp 0.3s ease; border: 1px solid rgba(255,107,53,0.3);
+  box-shadow: 0 0 20px rgba(255,107,53,0.2);
+}
+.chartWrapper {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px;
+  background: rgba(10, 10, 15, 0.4);
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 16px 24px 16px 8px;
+  box-shadow: inset 0 2px 20px rgba(0,0,0,0.5);
+}
+.noData { font-size: 1.1rem; color: var(--clr-muted); margin: auto; font-weight: 600; font-family: var(--font-mono); }
+
+/* Controls Row */
+.controlsRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.controlCard { display: flex; flex-direction: column; gap: 16px; justify-content: space-between; }
+.controlTitle { font-weight: 800; font-size: 1.1rem; font-family: var(--font-heading); display: flex; align-items: center; gap: 8px; }
+.controlDesc  { font-size: 0.9rem; color: var(--clr-muted); line-height: 1.6; flex: 1; }
+
+.manualRow { display: flex; gap: 12px; }
+.manualInput {
+  flex: 1; padding: 12px 16px; border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text); font-family: var(--font-mono); font-size: 1rem; font-weight: 600;
+  outline: none; transition: border-color .2s, background .2s;
+}
+.manualInput:focus { border-color: var(--clr-accent); background: rgba(255,255,255,0.06); }
+
+.interceptorStatus { margin-top: 8px; }

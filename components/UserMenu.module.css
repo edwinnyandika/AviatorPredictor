@@ -1,0 +1,155 @@
+/* components/UserMenu.module.css */
+
+.wrapper {
+  position: relative;
+  display: inline-block;
+  align-items: center;
+}
+
+/* Loading Skeleton */
+.skeleton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Guest Links */
+.guestLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guestLinks a {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.guestLinks .loginBtn {
+  color: var(--clr-muted);
+  transition: color 0.2s;
+}
+
+.guestLinks .loginBtn:hover {
+  color: #fff;
+}
+
+/* Avatar Trigger */
+.avatarBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: var(--clr-panel);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarBtn:hover {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dropdown Menu */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 12px;
+  width: 240px;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  padding: 12px 0;
+  z-index: 1000;
+  animation: slideDown 0.2s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.userInfo {
+  padding: 8px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 8px;
+}
+
+.userName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.userEmail {
+  color: var(--clr-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menuList {
+  display: flex;
+  flex-direction: column;
+}
+
+.menuItem {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+.menuItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--clr-accent);
+}
+
+.signOut {
+  color: var(--clr-red);
+  margin-top: 4px;
+}
+
+.signOut:hover {
+  background: rgba(255, 51, 102, 0.1);
+  color: var(--clr-red);
+}
