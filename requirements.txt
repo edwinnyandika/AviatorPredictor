@@ -4,3 +4,8 @@ flask-cors
 eventlet
 gunicorn
 websocket-client
+numpy
+scipy
+pandas
+scikit-learn
+requests
