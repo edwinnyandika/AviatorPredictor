@@ -1,0 +1,11 @@
+flask==3.0.3
+flask-socketio==5.3.6
+flask-cors==4.0.1
+eventlet==0.36.1
+gunicorn==22.0.0
+websocket-client==1.8.0
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.2.2
+scikit-learn==1.5.1
+requests==2.32.3
