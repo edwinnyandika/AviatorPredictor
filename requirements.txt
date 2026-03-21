@@ -1,0 +1,7 @@
+@"
+flask
+flask-socketio
+flask-cors
+eventlet
+gunicorn
+"@ | Out-File -FilePath requirements.txt -Encoding utf8
