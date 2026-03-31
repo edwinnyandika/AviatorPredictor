@@ -1,0 +1,96 @@
+.wrapper {
+  padding: 40px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  font-family: var(--font-heading);
+  margin-bottom: 8px;
+}
+.subtitle {
+  color: var(--clr-text-muted);
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.metricCard {
+  background: var(--clr-panel);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.metricVal {
+  font-size: 3rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: var(--clr-accent);
+}
+
+.shareSection {
+  background: rgba(255, 107, 53, 0.05);
+  border: 1px dashed var(--clr-accent);
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.linkBox {
+  display: flex;
+  align-items: center;
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.linkInput {
+  flex: 1;
+  background: transparent;
+  color: var(--clr-green);
+  border: none;
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+}
+.copyBtn {
+  background: var(--clr-panel);
+  border: none;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  padding: 0 24px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+.copyBtn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.wsBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25D366;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 14px 24px;
+  border-radius: 99px;
+  transition: opacity 0.2s;
+}
+.wsBtn:hover {
+  opacity: 0.9;
+}

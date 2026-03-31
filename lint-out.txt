@@ -1,0 +1,1309 @@
+﻿node.exe : [{"filePath":"C:\
+\Users\\hp\\AviatorPredictor
+\\src\\app\\dashboard\\page.
+tsx","messages":[{"ruleId":"
+react-hooks/exhaustive-deps"
+,"severity":1,"message":"Rea
+ct Hook useEffect has a 
+missing dependency: 
+'streakToast'. Either 
+include it or remove the 
+dependency array.","line":21
+5,"column":6,"nodeType":"Arr
+ayExpression","endLine":215,
+"endColumn":100,"suggestions
+":[{"desc":"Update the 
+dependencies array to be: 
+[getAllTicks, 
+getProbabilityDistribution, 
+insertTick, isDbReady, 
+refresh, streakToast, 
+tfModel, trainModel]","fix":
+{"range":[7599,7693],"text":
+"[getAllTicks, 
+getProbabilityDistribution, 
+insertTick, isDbReady, 
+refresh, streakToast, 
+tfModel, trainModel]"}}]}],"
+suppressedMessages":[],"erro
+rCount":0,"fatalErrorCount":
+0,"warningCount":1,"fixableE
+rrorCount":0,"fixableWarning
+Count":0,"source":"'use 
+client';\n\nimport { 
+useState, useEffect, 
+useRef, useCallback } from 
+'react';\nimport Link from 
+'next/link';\nimport { 
+onAuthStateChanged } from 
+'firebase/auth';\nimport { 
+useRouter } from 
+'next/navigation';\nimport 
+{ auth } from 
+'@/lib/firebase';\nimport { 
+useSqlite } from '@/hooks/us
+eSqlite';\nimport { useTFJS 
+} from 
+'@/hooks/useTFJS';\nimport 
+{ useMonteCarlo } from '@/ho
+oks/useMonteCarlo';\nimport 
+styles from './page.module.c
+ss';\n\nconst riskTone = { 
+LOW: 'positive', NEUTRAL: 
+'info', HIGH: 'danger' 
+};\n\ntype DashboardStats = 
+{\n  totalRounds?: 
+number;\n  avgCrash?: 
+number;\n  safe80th?: 
+number;\n  lastCrash?: 
+number;\n  lastUpdated?: 
+string | number;\n  
+recent10?: number[];\n  
+prediction?: DashboardPredic
+tion;\n};\n\ntype 
+DashboardPrediction = {\n  
+confidence?: number;\n  
+riskLevel?: 'LOW' | 
+'NEUTRAL' | 'HIGH' | 
+string;\n  safeCashout?: 
+number;\n  signals?: 
+string[];\n  nextRange?: 
+[number, number];\n  
+betRecommendation?: 
+string;\n};\n\ntype 
+HistoryEntry = {\n  crash: 
+number;\n  ts?: number | 
+string;\n};\n\nfunction 
+avg(values) {\n  return 
+values.length ? 
+values.reduce((sum, value) 
+=> sum + value, 0) / 
+values.length : 
+0;\n}\n\nfunction 
+stdev(values) {\n  if 
+(!values.length) return 
+0;\n  const mean = 
+avg(values);\n  return Math.
+sqrt(avg(values.map((value) 
+=> (value - mean) ** 
+2)));\n}\n\nfunction 
+fmt(value, digits = 2) {\n  
+return 
+Number.isFinite(value) ? 
+`${value.toFixed(digits)}x` 
+: '--';\n}\n\nfunction 
+linePath(values, width = 
+720, height = 210) {\n  if 
+(!values.length) return 
+'';\n  const min = 
+Math.min(...values);\n  
+const max = 
+Math.max(...values);\n  
+const span = max - min || 
+1;\n  return 
+values.map((value, index) 
+=> {\n    const x = 
+values.length === 1 ? width 
+/ 2 : (index / 
+(values.length - 1)) * 
+width;\n    const y = 
+height - ((value - min) / 
+span) * (height - 24) - 
+12;\n    return `${index 
+=== 0 ? 'M' : 'L'} 
+${x.toFixed(1)} 
+${y.toFixed(1)}`;\n  
+}).join(' ');\n}\n\nconst 
+CASINO_NAMES: 
+Record<string, string> = 
+{\n  sportpesa: 
+'SportPesa',\n  betika: 
+'Betika',\n  mozzart: 
+'Mozzart Bet',\n  '1xbet': 
+'1xBet',\n  betway: 
+'Betway',\n  odibets: 
+'OdiBets',\n};\n\nexport 
+default function 
+Dashboard() {\n  const 
+[stats, setStats] = 
+useState<DashboardStats | 
+null>(null);\n  const 
+[prediction, setPrediction] 
+= useState<DashboardPredicti
+on | null>(null);\n  const 
+[historyEntries, 
+setHistoryEntries] = useStat
+e<HistoryEntry[]>([]);\n  
+const [connected, 
+setConnected] = 
+useState(false);\n  const 
+[authChecked, 
+setAuthChecked] = 
+useState(false);\n  const 
+[manualVal, setManualVal] = 
+useState('');\n  const 
+[riskProfile, 
+setRiskProfile] = 
+useState('BALANCED');\n  
+const [themeMode, 
+setThemeMode] = 
+useState('dark');\n  const 
+[sessionStartedAt] = 
+useState(() => 
+Date.now());\n  const 
+flashRef = 
+useRef<ReturnType<typeof 
+setTimeout> | 
+null>(null);\n  const 
+[flashCrash, setFlashCrash] 
+= useState<number | 
+null>(null);\n  const 
+[connectedCasinos, 
+setConnectedCasinos] = 
+useState(['sportpesa']);\n  
+const [activeCasino, 
+setActiveCasino] = 
+useState('sportpesa');\n  
+const [backendStatus, 
+setBackendStatus] = 
+useState<'online' | 
+'waking'>('online');\n  
+const [lastRoundAt, 
+setLastRoundAt] = 
+useState(Date.now());\n  
+const [streakToast, 
+setStreakToast] = 
+useState<{msg: string, 
+title: string} | 
+null>(null);\n  const 
+[modalOpen, setModalOpen] = 
+useState(false);\n  const 
+router = useRouter();\n\n  
+// Read active casino from 
+localStorage (set by casino 
+selector page)\n  
+useEffect(() => {\n    
+const stored = localStorage.
+getItem('aviatoriq_casino');
+\n    if (stored) 
+setActiveCasino(stored);\n  
+}, []);\n\n  const { 
+isReady: isDbReady, 
+insertTick, getAllTicks } = 
+useSqlite() as unknown as 
+{\n    isReady: boolean;\n  
+  insertTick: (provider: 
+string, type: string, 
+value: number) => void;\n   
+ getAllTicks: () => 
+any[];\n  };\n  const { 
+model: tfModel, isTraining, 
+distribution, trainModel, 
+getProbabilityDistribution 
+} = useTFJS() as unknown as 
+{\n    model: any;\n    
+isTraining: boolean;\n    
+distribution: any[];\n    
+trainModel: (ticks: any[]) 
+=> void;\n    
+getProbabilityDistribution: 
+(ticks: any[]) => 
+Promise<any>;\n  };\n  
+const { metrics: mcMetrics, 
+isSimulating: mcSimulating 
+} = 
+useMonteCarlo(distribution) 
+as unknown as {\n    
+metrics: any;\n    
+isSimulating: boolean;\n  
+};\n\n  const refresh = 
+useCallback(async () => {\n 
+   try {\n      const 
+casino = localStorage.getIte
+m('aviatoriq_casino') || 
+'sportpesa';\n      const 
+qs = casino ? 
+`?casino_id=${casino}` : 
+'';\n      const [statsRes, 
+historyRes] = await 
+Promise.all([\n        
+fetch(`/api/stats${qs}`, { 
+cache: 'no-store' }),\n     
+   
+fetch(`/api/history${qs}`, 
+{ cache: 'no-store' }),\n   
+   ]);\n      if 
+(!statsRes.ok || 
+!historyRes.ok) throw new 
+Error(\"API Offline\");\n   
+   const statsData = await 
+statsRes.json();\n      
+const historyData = await 
+historyRes.json();\n      
+setStats(statsData);\n      
+setPrediction(statsData.pred
+iction);\n      setHistoryEn
+tries(historyData.history 
+|| []);\n      setBackendSta
+tus('online');\n    } catch 
+(error) {\n      setBackendS
+tatus('waking');\n      
+console.error('Dashboard 
+refresh failed', error);\n  
+  }\n  }, []);\n\n  
+useEffect(() => () => {\n   
+ if (flashRef.current) clear
+Timeout(flashRef.current);\n
+  }, []);\n\n  useEffect(() 
+=> {\n    const unsub = 
+onAuthStateChanged(auth, 
+async (user) => {\n      if 
+(!user) {\n        router.pu
+sh('/auth?mode=login');\n   
+     return;\n      }\n     
+ \n      try {\n        
+const { getDoc, doc } = 
+await import('firebase/fires
+tore');\n        const { db 
+} = await 
+import('@/lib/firebase');\n 
+       const profileSnap = 
+await getDoc(doc(db, 
+'users_profile', 
+user.uid));\n        \n     
+   if 
+(!profileSnap.exists() || !p
+rofileSnap.data().onboarding
+_completed) {\n          rou
+ter.replace('/onboarding');\
+n          return;\n        
+}\n      } catch (err) {\n  
+      console.error('Failed 
+to fetch profile', err);\n  
+    }\n      \n      
+setAuthChecked(true);\n    
+});\n    return () => 
+unsub();\n  }, 
+[router]);\n\n  
+useEffect(() => {\n    
+refresh();\n    const es = 
+new EventSource('/api/stream
+');\n    es.addEventListener
+('connected', () => 
+setConnected(true));\n    es
+.addEventListener('crash', 
+async (event) => {\n      
+const payload = 
+JSON.parse(event.data);\n   
+   setPrediction(payload.pre
+diction);\n      setFlashCra
+sh(payload.crash);\n      se
+tLastRoundAt(Date.now());\n 
+     if (flashRef.current) c
+learTimeout(flashRef.current
+);\n      flashRef.current 
+= setTimeout(() => 
+setFlashCrash(null), 
+1200);\n\n      const 
+latestVal = 
+payload.crash;\n      
+setHistoryEntries(prev => 
+{\n        const next = 
+[...prev, { crash: 
+latestVal, ts: Date.now() 
+}];\n        // Check 
+gamified streaks on the new 
+array\n        let 
+currentLow = 0;\n        
+for (let i = next.length - 
+1; i >= 0 && next[i].crash 
+< 2; i -= 1) 
+currentLow++;\n        if 
+(latestVal < 2) {\n         
+   if (currentLow === 5) 
+setStreakToast({ title: 
+'Streak Milestone', msg: '5 
+consecutive rounds under 2x 
+ΓÇö watch out' });\n        
+    if (currentLow === 10) 
+setStreakToast({ title: 
+'Historic Low', msg: '10 
+round low streak ΓÇö 
+historically unusual' });\n 
+           if (currentLow 
+=== 15) setStreakToast({ 
+title: 'Market Crash', msg: 
+'15 round low streak ΓÇö 
+extreme event' });\n        
+}\n        return next;\n   
+   });\n\n      if 
+(isDbReady) {\n        
+insertTick('spribe', 
+'crash', payload.crash);\n  
+      if (tfModel) {\n      
+    const ticks = [...getAll
+Ticks()].reverse();\n       
+   if (ticks.length >= 15) 
+{\n            await getProb
+abilityDistribution(ticks);\
+n            
+trainModel(ticks);\n        
+  }\n        }\n      }\n\n 
+     // Hide toast after 8 
+seconds\n      if 
+(streakToast) setTimeout(() 
+=> setStreakToast(null), 
+8000);\n\n      
+refresh();\n    });\n    
+es.onerror = () => 
+setConnected(false);\n    
+const poll = 
+setInterval(refresh, 
+7000);\n    return () => 
+{\n      es.close();\n      
+clearInterval(poll);\n    
+};\n  }, [getAllTicks, 
+getProbabilityDistribution, 
+insertTick, isDbReady, 
+refresh, tfModel, 
+trainModel]);\n\n  const 
+submitManual = 
+useCallback(async () => {\n 
+   const value = 
+parseFloat(manualVal);\n    
+if (!value || value < 1) 
+return;\n    await 
+fetch('/api/crash', {\n     
+ method: 'POST',\n      
+headers: { 'Content-Type': 
+'application/json' },\n     
+ body: JSON.stringify({ 
+multiplier: value, source: 
+'manual' }),\n    });\n    
+setManualVal('');\n    
+refresh();\n  }, 
+[manualVal, refresh]);\n\n  
+const exportCsv = 
+useCallback(() => {\n    if 
+(!isDbReady) return;\n    
+const rows = 
+getAllTicks();\n    const 
+csv = ['ID,Provider,Type,Mul
+tiplier,Timestamp', 
+...rows.map((row) => `${row.
+id},${row.provider},${row.ty
+pe},${row.value},${row.times
+tamp}`)].join('\\n');\n    
+const blob = new 
+Blob([csv], { type: 
+'text/csv' });\n    const 
+url = URL.createObjectURL(bl
+ob);\n    const link = docum
+ent.createElement('a');\n   
+ link.href = url;\n    
+link.download = `aviator-ses
+sion-${Date.now()}.csv`;\n  
+  link.click();\n    
+URL.revokeObjectURL(url);\n 
+ }, [getAllTicks, 
+isDbReady]);\n\n  if 
+(!authChecked) return <div c
+lassName={styles.loading}>Au
+thenticating 
+dashboard...</div>;\n\n  
+const values = 
+historyEntries.map((entry) 
+=> entry.crash);\n  const 
+recent = values.slice(-12).r
+everse();\n  const trend = 
+values.slice(-50);\n  const 
+lowStreak = (() => {\n    
+let count = 0;\n    for 
+(let i = values.length - 1; 
+i >= 0 && values[i] < 2; i 
+-= 1) count += 1;\n    
+return count;\n  })();\n  
+const spikes = 
+values.filter((value) => 
+value >= 10).length;\n  
+const dist = [\n    { 
+label: '1.0 - 1.9x', value: 
+values.filter((value) => 
+value < 2).length, tone: 
+styles.distMuted },\n    { 
+label: '2.0 - 4.9x', value: 
+values.filter((value) => 
+value >= 2 && value < 
+5).length, tone: 
+styles.distInfo },\n    { 
+label: '5.0 - 9.9x', value: 
+values.filter((value) => 
+value >= 5 && value < 
+10).length, tone: 
+styles.distPositive },\n    
+{ label: '10x +', value: 
+values.filter((value) => 
+value >= 10).length, tone: 
+styles.distAccent },\n  
+];\n  const total = 
+Math.max(values.length, 
+1);\n  const volatility = 
+Math.min(100, Math.round((st
+dev(values.slice(-20)) / Mat
+h.max(avg(values.slice(-20))
+, 1)) * 100));\n  const 
+spikeProbability = 
+Math.min(100, 
+Math.round((lowStreak * 8) 
++ ((prediction?.confidence 
+|| 0) * 35)));\n  const 
+tone = riskTone[(prediction?
+.riskLevel as keyof typeof 
+riskTone) || 'NEUTRAL'] || 
+'info';\n  const 
+safeCashout = 
+prediction?.safeCashout || 
+1.8;\n  const 
+adjustedCashout = 
+riskProfile === 
+'AGGRESSIVE' ? safeCashout 
+* 1.2 : riskProfile === 
+'CONSERVATIVE' ? 
+Math.max(1.1, safeCashout * 
+0.82) : safeCashout;\n  
+const sessionMinutes = 
+Math.max(1, 
+Math.floor((Date.now() - 
+sessionStartedAt) / 
+60000));\n  const heatmap = 
+Array.from({ length: 24 }, 
+(_, index) => {\n    const 
+slice = values.slice(index 
+* Math.max(1, 
+Math.ceil(values.length / 
+24)), (index + 1) * 
+Math.max(1, 
+Math.ceil(values.length / 
+24)));\n    return 
+avg(slice);\n  });\n  const 
+heatMin = 
+Math.min(...heatmap, 0);\n  
+const heatMax = 
+Math.max(...heatmap, 1);\n  
+const path = 
+linePath(trend);\n\n  const 
+isStale = Date.now() - 
+lastRoundAt > 60000;\n  \n  
+// Status Indicator Logic\n 
+ let statusText = 
+\"Connected ΓÇö receiving 
+live data\";\n  let 
+statusColor = 
+\"#128261\";\n  let 
+statusBg = \"rgba(29, 158, 
+117, 0.12)\";\n  \n  if 
+(!connected) {\n    
+statusText = \"Disconnected 
+ΓÇö click to reconnect\";\n 
+   statusColor = 
+\"#ef4444\";\n    statusBg 
+= \"rgba(239, 68, 68, 
+0.12)\";\n  } else if 
+(isStale) {\n    statusText 
+= \"No data in last 60s ΓÇö 
+game open?\";\n    
+statusColor = 
+\"#f59e0b\";\n    statusBg 
+= \"rgba(245, 158, 11, 
+0.12)\";\n  }\n\n  const 
+handleAddCasino = () => {\n 
+   alert(\"Track multiple 
+casinos with PRO. Upgrade 
+now to combine live 
+signals.\");\n  };\n\n  
+return (\n    <div 
+className={styles.wrapper} 
+data-theme={themeMode}>\n   
+   {backendStatus === 
+'waking' && (\n        <div 
+className={styles.offlineBan
+ner}>\n          <div classN
+ame={styles.offlineSpinner} 
+/>\n          Backend is 
+waking up... this takes ~30 
+seconds on free tier\n      
+  </div>\n      )}\n      
+\n      {streakToast && (\n 
+       <div style={{ 
+position: 'fixed', bottom: 
+32, right: 32, background: 
+'var(--clr-panel)', border: 
+'1px solid 
+var(--clr-accent)', 
+padding: 16, borderRadius: 
+12, zIndex: 99, animation: 
+'fadeUp 0.3s' }}>\n         
+ <h4 style={{ color: 
+'var(--clr-accent)', 
+marginBottom: 4 }}>≡ƒÜÇ 
+{streakToast.title}</h4>\n  
+        <p style={{ 
+fontSize: '0.85rem' 
+}}>{streakToast.msg}</p>\n  
+      </div>\n      )}\n\n  
+    {modalOpen && (\n       
+ <div style={{ position: 
+'fixed', inset: 0, 
+background: 
+'rgba(0,0,0,0.8)', zIndex: 
+100, display: 'grid', 
+placeItems: 'center', 
+backdropFilter: 'blur(4px)' 
+}} onClick={() => 
+setModalOpen(false)}>\n     
+      <div style={{ width: 
+400, background: 
+'var(--clr-panel)', 
+borderRadius: 24, padding: 
+32, border: '1px solid 
+var(--clr-border)' }} 
+onClick={e => 
+e.stopPropagation()}>\n     
+         <h2 style={{ 
+marginBottom: 16, 
+fontFamily: 
+'var(--font-heading)' 
+}}>Signal Analysis</h2>\n   
+           <p style={{ 
+color: 
+'var(--clr-text-muted)', 
+fontSize: '0.9rem', 
+marginBottom: 12 }}>This is 
+statistical analysis, not a 
+prediction. The game uses 
+RNG.</p>\n              
+<div style={{ background: 
+'rgba(255,255,255,0.03)', 
+padding: 16, borderRadius: 
+12, marginBottom: 20 }}>\n  
+              <strong 
+style={{ color: 
+'var(--clr-accent)' }}>Why {
+prediction?.riskLevel}?</str
+ong>\n                <p 
+style={{ marginTop: 8, 
+fontSize: '0.85rem' }}>{pred
+iction?.signals?.[0] || 
+'Based on recent string of 
+low streak pressures 
+pushing standard deviation 
+outside normal 
+boundaries.'}</p>\n         
+     </div>\n              
+<button onClick={() => 
+setModalOpen(false)} 
+style={{ width: '100%', 
+padding: '12px', 
+background: 
+'var(--clr-border)', 
+border: 'none', 
+borderRadius: 12, color: 
+'white', fontWeight: 'bold' 
+}}>Close</button>\n         
+  </div>\n        </div>\n  
+    )}\n\n      <section cla
+ssName={styles.topbar}>\n   
+     <div className={styles.
+topbarLeft}>\n          
+<div>\n            <div clas
+sName={styles.eyebrow}>Live 
+Desk</div>\n            
+<div className={styles.logo}
+>aviator<span>IQ</span></div
+>\n          </div>\n       
+   <Link 
+href=\"/onboarding\" 
+className={styles.livePill} 
+style={{ color: 
+statusColor, background: 
+statusBg }}>\n            
+<span 
+className={styles.liveDot} 
+style={{ animation: 
+connected && !isStale ? 
+'pulse 1.5s infinite' : 
+'none', background: 
+statusColor }} />\n         
+   {statusText}\n          
+</Link>\n          <div 
+style={{ display: 'flex', 
+gap: 6, alignItems: 
+'center', marginLeft: 12 
+}}>\n            
+{connectedCasinos.map(c => 
+(\n              <button 
+key={c} onClick={() => 
+setActiveCasino(c)} classNam
+e={`${styles.casinoPill} 
+${activeCasino === c ? 
+styles.casinoPillActive : 
+''}`}>\n                
+{CASINO_NAMES[c] || c} 
+{activeCasino === c && 
+'ΓùÅ'}\n              
+</button>\n            
+))}\n            <button cla
+ssName={styles.casinoPill} 
+style={{ padding: '6px 
+12px', background: 
+'rgba(255,255,255,0.05)', 
+color: 
+'var(--clr-text-muted)' }} o
+nClick={handleAddCasino}>+</
+button>\n          </div>\n 
+       </div>\n        <div 
+className={styles.topbarRigh
+t}>\n          <div classNam
+e={styles.sessionTime}>Sessi
+on {sessionMinutes} min | 
+Round #{stats?.totalRounds 
+?? 0}</div>\n          <div 
+className={styles.avatar}>AI
+</div>\n        </div>\n    
+  </section>\n\n      
+<section 
+className={styles.hero}>\n  
+      <div>\n          <div 
+className={styles.heroLabel}
+>Operator Surface</div>\n   
+       <h1 className={styles
+.heroTitle}>Sharper 
+dashboard typography, 
+cleaner tools, better live 
+readability.</h1>\n        
+</div>\n        <div classNa
+me={styles.heroStats}>\n    
+      <div className={styles
+.heroCard}><span>Target cash
+out</span><strong>{fmt(adjus
+tedCashout)}</strong></div>\
+n          <div className={s
+tyles.heroCard}><span>Risk 
+posture</span><strong classN
+ame={styles[`tone${tone}`]}>
+{prediction?.riskLevel || 
+'NEUTRAL'}</strong></div>\n 
+       </div>\n      
+</section>\n\n      
+<section className={styles.r
+ecentBar}>\n        <div cla
+ssName={styles.recentLabel}>
+Last 12 rounds</div>\n      
+  <div className={styles.rec
+entTrack}>\n          
+{recent.map((value, index) 
+=> <div 
+key={`${value}-${index}`} cl
+assName={`${styles.multBubbl
+e} ${value >= 10 ? 
+styles.bubbleSpike : value 
+>= 5 ? styles.bubbleHigh : 
+value >= 2 ? 
+styles.bubbleMid : styles.bu
+bbleLow}`}>{value.toFixed(1)
+}x</div>)}\n        
+</div>\n      
+</section>\n\n      
+<section className={styles.m
+etricsGrid}>\n        <div c
+lassName={styles.metricCard}
+><div className={styles.metr
+icLabel}>Session 
+average</div><div className=
+{styles.metricValue}>{fmt(st
+ats?.avgCrash || 
+avg(values))}</div><div clas
+sName={styles.metricDelta}>L
+ive session 
+mean</div></div>\n        
+<div className={styles.metri
+cCard}><div className={style
+s.metricLabel}>Rounds 
+tracked</div><div className=
+{styles.metricValue}>{stats?
+.totalRounds ?? 
+0}</div><div className={styl
+es.metricDelta}>Current 
+archive</div></div>\n       
+ <div className={styles.metr
+icCard}><div className={styl
+es.metricLabel}>Low 
+streak</div><div className={
+styles.metricValue}>{lowStre
+ak} rounds</div><div classNa
+me={styles.metricDelta}>{low
+Streak >= 4 ? 'Risk rising' 
+: 
+'Contained'}</div></div>\n  
+      <div className={styles
+.metricCard}><div className=
+{styles.metricLabel}>10x 
+spikes</div><div className={
+styles.metricValue}>{spikes}
+</div><div className={styles
+.metricDelta}>High 
+multiplier 
+hits</div></div>\n      
+</section>\n\n      
+<section className={styles.m
+ainGrid}>\n        <div 
+className={styles.card}>\n  
+        <div className={styl
+es.cardTitle}>Multiplier 
+trend</div>\n          <div 
+className={styles.chartArea}
+>\n            {path ? (\n  
+            <svg 
+viewBox=\"0 0 720 210\" 
+className={styles.chartSvg} 
+preserveAspectRatio=\"none\"
+>\n                <path 
+d={`${path} L 720 210 L 0 
+210 Z`} className={styles.ch
+artFill} />\n               
+ <path d={path} className={s
+tyles.chartLine} />\n       
+       </svg>\n            
+) : <div className={styles.e
+mptyState}>Waiting for 
+enough live rounds to draw 
+the trend.</div>}\n         
+ </div>\n          
+{flashCrash ? <div className
+={styles.impact}>Impact 
+{fmt(flashCrash)}</div> : 
+null}\n        </div>\n\n   
+     <div className={styles.
+sideStack}>\n          <div 
+className={styles.signalCard
+}>\n            <div classNa
+me={styles.signalHeader}>\n 
+             <div className=
+{styles.signalName}>Current 
+signal</div>\n              
+<button onClick={() => 
+setModalOpen(true)} 
+style={{ background: 
+'transparent', border: '1px 
+solid var(--clr-border)', 
+color: 'white', 
+borderRadius: '50%', width: 
+24, height: 24, cursor: 
+'pointer', fontSize: '10px' 
+}}>i</button>\n             
+ <div className={`${styles.s
+ignalBadge} ${styles[`badge$
+{tone}`]}`}>{prediction?.ris
+kLevel || 
+'Neutral'}</div>\n          
+  </div>\n            <div c
+lassName={styles.confidenceL
+abel}><span>Confidence</span
+><span>{Math.round((predicti
+on?.confidence || 0) * 
+100)}%</span></div>\n       
+     <div className={styles.
+confidenceTrack}><div classN
+ame={`${styles.confidenceFil
+l} 
+${styles[`fill${tone}`]}`} 
+style={{ width: `${Math.roun
+d((prediction?.confidence 
+|| 0) * 100)}%` }} 
+/></div>\n            <div c
+lassName={styles.signalReaso
+n}>{prediction?.signals?.[0]
+ || 'Signal feed will 
+strengthen as live history 
+grows.'}</div>\n          
+</div>\n          <div class
+Name={styles.signalCard}>\n 
+           <div className={s
+tyles.signalHeader}><div cla
+ssName={styles.signalName}>V
+olatility index</div><div cl
+assName={`${styles.signalBad
+ge} ${styles.badgeInfo}`}>{v
+olatility > 55 ? 'Active' : 
+'Stable'}</div></div>\n     
+       <div className={style
+s.confidenceLabel}><span>Lev
+el</span><span>{volatility}%
+</span></div>\n            
+<div className={styles.confi
+denceTrack}><div className={
+`${styles.confidenceFill} 
+${styles.fillInfo}`} 
+style={{ width: 
+`${volatility}%` }} 
+/></div>\n            <div c
+lassName={styles.signalReaso
+n}>Dispersion across recent 
+rounds is driving this 
+read.</div>\n          
+</div>\n          <div class
+Name={styles.signalCard}>\n 
+           <div className={s
+tyles.signalHeader}><div cla
+ssName={styles.signalName}>S
+pike probability</div><div c
+lassName={`${styles.signalBa
+dge} ${styles.badgeAccent}`}
+>{spikeProbability >= 65 ? 
+'Elevated' : 
+'Watching'}</div></div>\n   
+         <div className={sty
+les.confidenceLabel}><span>S
+core</span><span>{spikeProba
+bility}%</span></div>\n     
+       <div className={style
+s.confidenceTrack}><div clas
+sName={`${styles.confidenceF
+ill} ${styles.fillAccent}`} 
+style={{ width: 
+`${spikeProbability}%` }} 
+/></div>\n            <div c
+lassName={styles.signalReaso
+n}>Low-streak pressure and 
+signal confidence are 
+pushing this score.</div>\n 
+         </div>\n        
+</div>\n      
+</section>\n\n      
+<section className={styles.b
+ottomGrid}>\n        <div 
+className={styles.card}>\n  
+        <div className={styl
+es.cardTitle}>Distribution</
+div>\n          
+{dist.map((row) => <div 
+key={row.label} className={s
+tyles.histRow}><div classNam
+e={styles.histRange}>{row.la
+bel}</div><div className={st
+yles.histBarWrap}><div class
+Name={`${styles.histBar} 
+${row.tone}`} style={{ 
+width: 
+`${Math.round((row.value / 
+total) * 100)}%` }} 
+/></div></div>)}\n        
+</div>\n        <div 
+className={styles.card}>\n  
+        <div className={styl
+es.cardTitle}>Streak 
+stats</div>\n          <div 
+className={styles.streakRow}
+><span>Safe 80th</span><stro
+ng>{fmt(stats?.safe80th || 
+0)}</strong></div>\n        
+  <div className={styles.str
+eakRow}><span>Last crash</sp
+an><strong>{fmt(stats?.lastC
+rash || 
+0)}</strong></div>\n        
+  <div className={styles.str
+eakRow}><span>Projected rang
+e</span><strong>{prediction?
+.nextRange ? `${fmt(predicti
+on.nextRange[0])} - ${fmt(pr
+ediction.nextRange[1])}` : 
+'--'}</strong></div>\n      
+    <div className={styles.s
+treakRow}><span>Monte Carlo<
+/span><strong>{mcSimulating 
+? 'Running' : mcMetrics ? 
+`KSh ${mcMetrics.lower95}-${
+mcMetrics.upper95}` : 
+'Pending'}</strong></div>\n 
+       </div>\n      
+</section>\n\n      
+<section className={styles.b
+ottomGrid}>\n        <div 
+className={styles.card}>\n  
+        <div className={styl
+es.cardTitle}>Daily 
+heatmap</div>\n          
+<div className={styles.heatm
+apGrid}>\n            
+{heatmap.map((value, index) 
+=> {\n              const 
+ratio = (value - heatMin) / 
+((heatMax - heatMin) || 
+1);\n              const 
+variant = ratio < 0.35 ? 
+styles.hmCool : ratio < 0.7 
+? styles.hmWarm : 
+styles.hmHot;\n             
+ return <div key={index} cla
+ssName={`${styles.hmCell} 
+${variant}`} style={{ 
+opacity: 0.16 + ratio * 
+0.84 }} title={fmt(value || 
+0)} />;\n            })}\n  
+        </div>\n        
+</div>\n        <div 
+className={styles.card}>\n  
+        <div className={styl
+es.cardTitle}>Tools and 
+controls</div>\n          
+<div className={styles.toolR
+ow}>\n            <Link 
+href=\"/dashboard/tools\" cl
+assName={styles.toolButton}>
+Open tools</Link>\n         
+   <Link 
+href=\"/dashboard/history\" 
+className={styles.toolButton
+}>History</Link>\n          
+</div>\n          <div class
+Name={styles.toolRow}>\n    
+        <button className={s
+tyles.toolButton} 
+onClick={exportCsv}>Export 
+CSV</button>\n            
+<Link href=\"/dashboard/sett
+ings\" className={styles.too
+lButton}>Settings</Link>\n  
+        </div>\n          
+<div className={styles.toolR
+ow}>\n            <select 
+value={riskProfile} 
+onChange={(event) => setRisk
+Profile(event.target.value)}
+ className={styles.select}>\
+n              <option value
+=\"CONSERVATIVE\">Conservati
+ve</option>\n              
+<option value=\"BALANCED\">B
+alanced</option>\n          
+    <option value=\"AGGRESSI
+VE\">Aggressive</option>\n  
+            <option value=\"
+PAPER\">Paper</option>\n    
+        </select>\n         
+   <select 
+value={themeMode} 
+onChange={(event) => setThem
+eMode(event.target.value)} c
+lassName={styles.select}>\n 
+             <option 
+value=\"dark\">Dark 
+studio</option>\n           
+   <option 
+value=\"light\">Soft 
+light</option>\n            
+  <option value=\"obsidian\"
+>Obsidian</option>\n        
+    </select>\n          
+</div>\n          <div class
+Name={styles.manualRow}>\n  
+          <input className={
+styles.manualInput} 
+type=\"number\" min=\"1\" 
+step=\"0.01\" 
+value={manualVal} 
+onChange={(event) => setManu
+alVal(event.target.value)} 
+placeholder=\"Verified 
+round result\" />\n         
+   <button className={styles
+.primaryButton} onClick={sub
+mitManual}>Log</button>\n   
+       </div>\n          
+<div className={styles.aiPan
+el}>\n            <div><span
+>SQLite</span><strong>{isDbR
+eady ? 'Ready' : 
+'Standby'}</strong></div>\n 
+           <div><span>TF.js<
+/span><strong>{isTraining ? 
+'Training' : 
+'Idle'}</strong></div>\n    
+        <div><span>Signal bu
+ckets</span><strong>{distrib
+ution?.length || 
+0}</strong></div>\n         
+ </div>\n        </div>\n   
+   </section>\n    </div>\n 
+ );\n}\n","usedDeprecatedRul
+es":[]},{"filePath":"C:\\Use
+rs\\hp\\AviatorPredictor\\sr
+c\\app\\onboarding\\page.tsx
+","messages":[{"ruleId":"rea
+ct/jsx-no-comment-textnodes"
+,"severity":2,"message":"Com
+ments inside children 
+section of tag should be 
+placed inside braces","line"
+:122,"column":27,"nodeType":
+"JSXText","messageId":"putCo
+mmentInBraces","endLine":123
+,"endColumn":15}],"suppresse
+dMessages":[],"errorCount":1
+,"fatalErrorCount":0,"warnin
+gCount":0,"fixableErrorCount
+":0,"fixableWarningCount":0,
+"source":"'use 
+client';\n\nimport { 
+useState, useEffect } from 
+'react';\nimport { 
+useRouter } from 
+'next/navigation';\nimport 
+{ auth } from 
+'@/lib/firebase';\nimport { 
+onAuthStateChanged } from 
+'firebase/auth';\nimport { 
+setDoc, doc } from 'firebase
+/firestore';\nimport { db } 
+from 
+'@/lib/firebase';\nimport { 
+apiFetch } from 
+'@/lib/api';\nimport styles 
+from './page.module.css';\n\
+nconst CASINOS = [\n  { id: 
+'sportpesa', label: 
+'SportPesa KE' },\n  { id: 
+'betika', label: 'Betika' 
+},\n  { id: 'mozzart', 
+label: 'Mozzart Bet' },\n  
+{ id: '1xbet', label: 
+'1xBet' }\n];\n\nexport 
+default function 
+Onboarding() {\n  const 
+router = useRouter();\n  
+const [step, setStep] = 
+useState(1);\n  const 
+[casino, setCasino] = 
+useState('');\n  const 
+[script, setScript] = 
+useState('');\n  const 
+[copied, setCopied] = 
+useState(false);\n  const 
+[user, setUser] = 
+useState<any>(null);\n\n  
+useEffect(() => {\n    
+const unsub = 
+onAuthStateChanged(auth, 
+(u) => {\n      if (!u) rout
+er.replace('/auth?mode=login
+');\n      else 
+setUser(u);\n    });\n    
+return () => unsub();\n  }, 
+[router]);\n\n  // Try to 
+generate script when casino 
+picked\n  const pickCasino 
+= async (c: string) => {\n  
+  setCasino(c);\n    localSt
+orage.setItem('aviatoriq_cas
+ino', c);\n    try {\n      
+const res = await apiFetch(`
+/casino/script/${c}`);\n    
+  if (!res.ok) throw new 
+Error(\"Failed to gen 
+script\");\n      const 
+text = await res.text();\n  
+    setScript(text);\n      
+setStep(2);\n    } catch 
+(err) {\n      
+alert(\"Error generating 
+script. Is backend 
+running?\");\n    }\n  
+};\n\n  const copyScript = 
+async () => {\n    try {\n  
+    await navigator.clipboar
+d.writeText(script);\n      
+setCopied(true);\n      
+setTimeout(() => {\n        
+setStep(3);\n        
+startListening();\n      }, 
+1500);\n    } catch (e) {\n 
+     alert(\"Failed to 
+copy\");\n    }\n  };\n\n  
+const startListening = () 
+=> {\n    // We listen to 
+the SSE. If a crash or 
+connected event fires, 
+write complete & 
+redirect.\n    const es = 
+new EventSource('/api/stream
+');\n    es.addEventListener
+('crash', async () => {\n   
+   es.close();\n      await 
+completeOnboarding();\n    
+});\n  };\n\n  const 
+completeOnboarding = async 
+() => {\n    if (!user) 
+return;\n    try {\n      
+await setDoc(doc(db, 
+'users_profile', user.uid), 
+{\n        
+onboarding_completed: 
+true,\n        plan: 
+'FREE'\n      }, { merge: 
+true });\n      router.repla
+ce('/dashboard');\n    } 
+catch (err) {\n      
+console.error(err);\n      r
+outer.replace('/dashboard');
+ // fallback\n    }\n  
+};\n\n  if (!user) return 
+null;\n\n  return (\n    
+<div className={styles.wrapp
+er}>\n      <div className={
+styles.header}>\n        
+<h1>Welcome to 
+AviatorIQ</h1>\n        
+<p>Follow these 3 simple 
+steps to connect your 
+game.</p>\n      </div>\n\n 
+     <div className={styles.
+stepBlock}>\n        <div cl
+assName={styles.stepHeader}>
+\n          <div className={
+styles.stepNum}>1</div>\n   
+       <div className={style
+s.stepTitle}>Select your 
+Casino</div>\n        
+</div>\n        {step === 1 
+&& (\n          <div classNa
+me={styles.casinoGrid}>\n   
+         {CASINOS.map(c => 
+(\n              <button 
+key={c.id} className={styles
+.casinoBtn} onClick={() => 
+pickCasino(c.id)}>\n        
+        {c.label}\n         
+     </button>\n            
+))}\n          </div>\n     
+   )}\n        {step > 1 && 
+<p style={{ color: 
+'var(--clr-green)' 
+}}>Selected: 
+{CASINOS.find(c => c.id === 
+casino)?.label} Γ£ô</p>}\n  
+    </div>\n\n      {step 
+>= 2 && (\n        <div clas
+sName={styles.stepBlock}>\n 
+         <div className={sty
+les.stepHeader}>\n          
+  <div className={styles.ste
+pNum}>2</div>\n            
+<div className={styles.stepT
+itle}>Copy your 
+Interceptor</div>\n         
+ </div>\n          {step 
+=== 2 && (\n            
+<>\n              <div class
+Name={styles.scriptBox}>\n  
+              
+{script.substring(0, 
+150)}...\n                
+<br/><br/>/* Click copy 
+below to grab the full 
+script */\n              
+</div>\n              
+<button className={styles.ac
+tionBtn} 
+onClick={copyScript}>\n     
+           {copied ? 
+'Copied! Γ£ô' : 'Copy 
+Script to Clipboard'}\n     
+         </button>\n        
+    </>\n          )}\n     
+     {step > 2 && <p 
+style={{ color: 
+'var(--clr-green)' 
+}}>Script copied! 
+Γ£ô</p>}\n        </div>\n  
+    )}\n\n      {step >= 3 
+&& (\n        <div className
+={styles.stepBlock}>\n      
+    <div className={styles.s
+tepHeader}>\n            
+<div className={styles.stepN
+um}>3</div>\n            
+<div className={styles.stepT
+itle}>Connect & 
+Play</div>\n          
+</div>\n          \n        
+  <div className={styles.gui
+deList}>\n            <div c
+lassName={styles.guideItem}>
+\n              
+<strong>A</strong>\n        
+      <span>Open the 
+{casino} Aviator game in a 
+new tab.</span>\n           
+ </div>\n            <div cl
+assName={styles.guideItem}>\
+n              
+<strong>B</strong>\n        
+      <span>Press 
+<b>F12</b> on your keyboard 
+to open Developer 
+Tools.</span>\n            
+</div>\n            <div cla
+ssName={styles.guideItem}>\n
+              
+<strong>C</strong>\n        
+      <span>Click the 
+<b>Console</b> tab, paste 
+the script, and press 
+<b>Enter</b>.</span>\n      
+      </div>\n          
+</div>\n\n          <div cla
+ssName={styles.waiting}>\n  
+          <div 
+className={styles.pulse} 
+/>\n            Waiting for 
+first round... (Do not 
+close this page)\n          
+  <br />\n            
+<button \n              onCl
+ick={completeOnboarding} \n 
+             style={{ 
+marginTop: 24, padding: 
+'8px 16px', background: 
+'transparent', border: '1px 
+solid var(--clr-border)', 
+color: 'white', cursor: 
+'pointer', borderRadius: 8 
+}}>\n              Skip 
+wait (debug)\n            
+</button>\n          
+</div>\n        </div>\n    
+  )}\n    </div>\n  );\n}\n"
+,"usedDeprecatedRules":[]}]
+At line:1 char:1
++ & 
+"C:\nvm4w\nodejs/node.exe" "
+C:\nvm4w\nodejs/node_modules
+/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: ([{"fi  
+  lePath":"C...atedRules"   
+ :[]}]:String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+
+info  - Need to disable 
+some ESLint rules? Learn 
+more here: https://nextjs.or
+g/docs/basic-features/eslint
+#disabling-rules

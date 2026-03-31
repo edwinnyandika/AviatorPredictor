@@ -1,0 +1,110 @@
+.wrapper {
+  padding: 40px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.title {
+  font-size: 2rem;
+  font-family: var(--font-heading);
+  margin-bottom: 8px;
+}
+.subtitle {
+  color: var(--clr-text-muted);
+}
+
+.exportBtn {
+  background: transparent;
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text);
+  padding: 8px 16px;
+  border-radius: 99px;
+  cursor: pointer;
+}
+.exportBtn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sessionCard {
+  background: var(--clr-panel);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+.sessionCard:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.sessionMeta {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+}
+.sessionMeta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.casinoBadge {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--clr-accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: right;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+}
+.statVal {
+  font-size: 1.2rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--clr-panel);
+  border: 1px dashed var(--clr-border);
+  border-radius: var(--radius-lg);
+  color: var(--clr-text-muted);
+}

@@ -1,0 +1,28 @@
+﻿node.exe : 
+At line:1 char:1
++ & 
+"C:\nvm4w\nodejs/node.exe" "
+C:\nvm4w\nodejs/node_modules
+/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (:Stri  
+  ng) [], RemoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+./src/app/onboarding/page.ts
+x
+122:27  Error: Comments 
+inside children section of 
+tag should be placed inside 
+braces  react/jsx-no-comment
+-textnodes
+
+info  - Need to disable 
+some ESLint rules? Learn 
+more here: https://nextjs.or
+g/docs/basic-features/eslint
+#disabling-rules

@@ -1,9 +1,17 @@
-services:
+﻿services:
   - type: web
-    name: aviator-predictor-backend
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python -m gunicorn --worker-class eventlet -w 1 live_predictor_server:app
+    name: aviatoriq-frontend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: NEXT_PUBLIC_BACKEND_URL
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        sync: false

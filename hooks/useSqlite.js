@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import initSqlJs from 'sql.js';
 
+let sqlPromise = null;
+
 export function useSqlite() {
   const [db, setDb] = useState(null);
   const [isReady, setIsReady] = useState(false);
@@ -9,7 +11,11 @@ export function useSqlite() {
     let active = true;
     
     // We fetch the WASM binary from cdnjs to completely bypass Next.js Webpack loader issues
-    initSqlJs({ locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm' })
+    if (!sqlPromise) {
+      sqlPromise = initSqlJs({ locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm' });
+    }
+    
+    sqlPromise
       .then(SQL => {
         if (!active) return;
         

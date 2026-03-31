@@ -1,0 +1,149 @@
+;(function() {
+    'use strict';
+
+    /* ─── CONFIG (injected at generation time) ─────────────────────── */
+    const CASINO_ID   = '{{casino_id}}';
+    const CASINO_NAME = '{{casino_name}}';
+    const BACKEND_URL = '{{backend_url}}';   // Render endpoint
+    const SECRET      = '{{secret}}';        // X-AviatorIQ-Secret
+    const WSS_HOST    = '{{wss_host_pattern}}';
+
+    /* ─── LOGGER ───────────────────────────────────────────────────── */
+    const log  = (...a) => console.log('%c[AviatorIQ]', 'color:#ff6b35;font-weight:bold', ...a);
+    const warn = (...a) => console.warn('%c[AviatorIQ]', 'color:#ffa726;font-weight:bold', ...a);
+
+    /* ─── DEDUP STATE ──────────────────────────────────────────────── */
+    const state = { lastCrash: null, lastCrashAt: 0, hud: null };
+
+    log(`v5.0 | casino=${CASINO_NAME} | backend=${BACKEND_URL}`);
+
+    /* ─── WEBSOCKET PROXY ──────────────────────────────────────────── */
+    const NativeWS = window.WebSocket;
+    if (!NativeWS) { warn('WebSocket unavailable'); return; }
+
+    window.WebSocket = new Proxy(NativeWS, {
+        construct(Target, args) {
+            const ws = new Target(...args);
+            const url = String(args[0] || '');
+            if (!WSS_HOST || url.includes(WSS_HOST)) {
+                log('WSS hooked →', url);
+                ws.addEventListener('message', ev => {
+                    try { parseFrame(ev.data); } catch (e) { warn('parse err', e); }
+                });
+            }
+            return ws;
+        }
+    });
+
+    /* ─── FRAME PARSER ─────────────────────────────────────────────── */
+    function parseFrame(raw) {
+        if (typeof raw !== 'string') return;
+        raw.split('\x00').filter(f => f.trim()).forEach(frame => {
+            let msg;
+            try { msg = JSON.parse(frame); } catch { return; }
+
+            const ch = msg.c || '';
+            const action = msg.a || '';
+            const p = msg.p || {};
+
+            if (ch === 'ext') {
+                if (['changeState'].includes(action)) {
+                    handleStateChange(p);
+                }
+                if (['roundChartInfo','chartInfo','gameTick'].includes(action)) {
+                    handleTick(p);
+                }
+                if (['roundResult','gameResult','crashResult','planeCrashed','roundEnd','gameEnd'].includes(action)) {
+                    handleCrash(p);
+                }
+            }
+        });
+    }
+
+    function handleStateChange(p) {
+        const s = (p.state || p.s || p.gameState || '').toUpperCase();
+        updateHud(null, s);
+    }
+
+    function handleTick(p) {
+        const m = parseFloat(p.mult ?? p.m ?? p.multiplier ?? p.x ?? 0);
+        if (Number.isFinite(m) && m >= 1) updateHud(m, 'FLYING');
+    }
+
+    function handleCrash(p) {
+        const raw = p.crashPoint ?? p.crash ?? p.mult ?? p.m ?? p.multiplier ?? p.result ?? p.value ?? p.coef ?? p.x;
+        const crash = Math.round(parseFloat(raw) * 100) / 100;
+        if (!Number.isFinite(crash) || crash < 1) return;
+
+        const now = Date.now();
+        if (crash === state.lastCrash && now - state.lastCrashAt < 3000) return;
+        state.lastCrash = crash;
+        state.lastCrashAt = now;
+
+        log(`CRASH → ${crash}x`);
+        updateHud(crash, 'CRASHED');
+        sendCrash(crash);
+    }
+
+    /* ─── BACKEND POST ─────────────────────────────────────────────── */
+    function sendCrash(multiplier) {
+        fetch(BACKEND_URL + '/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-AviatorIQ-Secret': SECRET,
+            },
+            body: JSON.stringify({ multiplier, casino_id: CASINO_ID, source: 'console' }),
+        })
+        .then(r => {
+            if (r.ok) log(`${multiplier}x → backend OK`);
+            else warn(`Backend ${r.status}`);
+        })
+        .catch(e => warn('Network error', e));
+    }
+
+    /* ─── HUD ──────────────────────────────────────────────────────── */
+    function injectHud() {
+        if (state.hud || !document.body) return;
+        state.hud = document.createElement('div');
+        state.hud.id = '__aviatoriq_hud__';
+        Object.assign(state.hud.style, {
+            position: 'fixed', top: '10px', right: '10px',
+            zIndex: '2147483647', pointerEvents: 'none',
+            background: 'rgba(8,8,12,0.88)', backdropFilter: 'blur(12px)',
+            border: '1px solid #ff6b35', color: '#ff6b35',
+            fontFamily: 'monospace', fontWeight: '700', fontSize: '13px',
+            padding: '6px 14px 7px', borderRadius: '20px',
+            letterSpacing: '1px', boxShadow: '0 3px 14px rgba(255,107,53,0.3)',
+            transition: 'color .25s, border-color .25s',
+        });
+        state.hud.textContent = `AviatorIQ · ${CASINO_NAME}`;
+        document.body.appendChild(state.hud);
+    }
+
+    function updateHud(multiplier, gameState) {
+        injectHud();
+        if (!state.hud) return;
+        if (gameState === 'CRASHED') {
+            state.hud.style.color = '#ef5350';
+            state.hud.style.borderColor = '#ef5350';
+            state.hud.textContent = `CRASHED ${multiplier}x`;
+            return;
+        }
+        if (Number.isFinite(multiplier) && multiplier >= 1) {
+            const color = multiplier < 1.5 ? '#ef5350' : multiplier < 3 ? '#ffa726' : multiplier < 7 ? '#ffffff' : '#5cdb95';
+            state.hud.style.color = color;
+            state.hud.style.borderColor = color;
+            state.hud.textContent = multiplier.toFixed(2) + 'x';
+            return;
+        }
+        if (gameState) {
+            state.hud.style.color = '#ffa726';
+            state.hud.style.borderColor = '#ffa726';
+            state.hud.textContent = gameState;
+        }
+    }
+
+    if (document.body) injectHud();
+    window.addEventListener('DOMContentLoaded', injectHud);
+})();

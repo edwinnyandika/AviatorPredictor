@@ -1,0 +1,407 @@
+/* Casino Selector Page Styles */
+
+.wrapper {
+  min-height: 100vh;
+  background: var(--clr-bg, #08080c);
+  color: var(--clr-text, #e8eaf0);
+  font-family: var(--font-base);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--clr-muted, #888);
+  font-size: 0.95rem;
+}
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8, 8, 12, 0.85);
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--clr-muted, #888);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.back:hover { color: var(--clr-text, #e8eaf0); }
+
+.navBrand {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--clr-accent, #ff6b35);
+}
+
+.brandIQ { color: #fff; }
+
+/* ── CONTAINER ── */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 14px;
+  background: rgba(255, 107, 53, 0.12);
+  border: 1px solid rgba(255, 107, 53, 0.25);
+  border-radius: 20px;
+  color: var(--clr-accent, #ff6b35);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.65) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: var(--clr-muted, #888);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── CASINO GRID ── */
+.casinoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.casinoCard {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  color: inherit;
+  overflow: hidden;
+}
+
+.casinoCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,107,53,0.08) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.casinoCard:hover:not(.disabled) {
+  border-color: rgba(255, 107, 53, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.15);
+}
+
+.casinoCard:hover:not(.disabled)::before { opacity: 1; }
+
+.cardSelected {
+  border-color: rgba(255, 107, 53, 0.6) !important;
+  background: rgba(255, 107, 53, 0.07) !important;
+}
+
+.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cardInner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.casinoIcon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.casinoInfo { flex: 1; }
+
+.casinoName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.casinoCurrency {
+  font-size: 0.8rem;
+  color: var(--clr-muted, #888);
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.cardArrow {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  color: rgba(255, 255, 255, 0.25);
+  transition: all 0.2s;
+}
+
+.casinoCard:hover .cardArrow {
+  color: var(--clr-accent, #ff6b35);
+  transform: translateX(3px);
+}
+
+/* ── SKELETON ── */
+.skeleton {
+  height: 86px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  pointer-events: none;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── SCRIPT PANEL ── */
+.scriptPanel {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--clr-muted, #888);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 36px;
+  padding: 0;
+  transition: color 0.2s;
+}
+.backBtn:hover { color: #fff; }
+
+.scriptHeader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.scriptTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.scriptSub {
+  color: var(--clr-muted, #888);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ── INSTRUCTIONS ── */
+.instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.instructionStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.stepNum {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  color: var(--clr-accent, #ff6b35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.stepText {
+  color: var(--clr-text, #e8eaf0);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding-top: 4px;
+}
+
+/* ── SCRIPT BOX ── */
+.scriptBox {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.4);
+  margin-bottom: 28px;
+}
+
+.scriptBoxHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.8rem;
+  color: var(--clr-muted, #888);
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,107,53,0.35);
+  background: rgba(255,107,53,0.1);
+  color: var(--clr-accent, #ff6b35);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.copyBtn:hover { background: rgba(255,107,53,0.2); }
+
+.copySuccess {
+  border-color: rgba(92, 219, 149, 0.4) !important;
+  background: rgba(92, 219, 149, 0.12) !important;
+  color: #5cdb95 !important;
+}
+
+.scriptCode {
+  padding: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: #c9d1d9;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 360px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+.scriptSkeleton {
+  padding: 40px;
+  text-align: center;
+  color: var(--clr-muted, #888);
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.9rem;
+}
+
+.scriptError {
+  padding: 28px;
+  text-align: center;
+  color: #ef5350;
+  background: rgba(239,83,80,0.06);
+  border-radius: 14px;
+  border: 1px solid rgba(239,83,80,0.2);
+}
+
+/* ── CTA ── */
+.ctaRow {
+  text-align: center;
+}
+
+.launchBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #ff6b35, #ff3d00);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(255,107,53,0.35);
+  margin-bottom: 12px;
+}
+
+.launchBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255,107,53,0.45);
+}
+
+.ctaHint {
+  color: var(--clr-muted, #888);
+  font-size: 0.83rem;
+  margin: 0;
+}

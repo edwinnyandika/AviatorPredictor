@@ -1,0 +1,274 @@
+/* ═══════════════════════════════════════════════════════════════
+   AviatorIQ — Onboarding Premium CSS
+   ═══════════════════════════════════════════════════════════════ */
+
+.wrapper {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 20px;
+  max-width: 680px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* Ambient backlight */
+.wrapper::before {
+  content: '';
+  position: absolute;
+  top: 10%; left: 50%;
+  transform: translateX(-50%);
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(255, 95, 31, 0.08), transparent 60%);
+  z-index: -1; pointer-events: none;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: fadeUp var(--t-base) var(--ease-out);
+}
+
+.header h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  margin-bottom: 12px;
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #fff 30%, var(--clr-text-muted));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  color: var(--clr-text-muted);
+  font-size: 1.1rem;
+}
+
+/* ── Step Container ── */
+.stepBlock {
+  padding: 28px 32px;
+  background: rgba(6, 7, 13, 0.6);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-xl);
+  margin-bottom: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  animation: fadeUp var(--t-base) var(--ease-spring) forwards;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+/* Glowing top edge */
+.stepBlock::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 95, 31, 0.3), transparent);
+  opacity: 0.8;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stepNum {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--clr-accent), #d44000);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-accent);
+  position: relative;
+}
+
+/* Ring pulse for active step */
+.stepNum::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 95, 31, 0.4);
+  animation: glowPulse 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.stepTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+  color: var(--clr-text);
+}
+
+/* ── Step 1: Casino Selection ── */
+.casinoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.casinoBtn {
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius);
+  color: var(--clr-text-2);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.casinoBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--clr-text);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.casinoBtn:active {
+  transform: scale(0.98);
+}
+
+/* ── Step 2: Script Box ── */
+.scriptBox {
+  padding: 20px 24px;
+  background: #000;
+  color: #00e87a;
+  border-radius: var(--radius);
+  border: 1px solid rgba(0, 232, 122, 0.2);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+  margin-bottom: 20px;
+  box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.actionBtn {
+  width: 100%;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: none;
+  background: linear-gradient(135deg, var(--clr-accent), #e04400);
+  color: white;
+  font-weight: 800;
+  font-size: 1.05rem;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-accent);
+}
+
+.actionBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(255, 95, 31, 0.4);
+}
+
+.actionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Step 3: Instructions ── */
+.guideList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.guideItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.guideItem strong {
+  width: 28px; height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-family: var(--font-display);
+  color: var(--clr-text);
+  flex-shrink: 0;
+}
+.guideItem span {
+  font-size: 0.95rem;
+  color: var(--clr-text-2);
+}
+.guideItem b {
+  color: var(--clr-text);
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+/* Waiting Radar State */
+.waiting {
+  text-align: center;
+  padding: 40px 0 20px;
+  position: relative;
+}
+
+.pulse {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background: var(--clr-accent);
+  border-radius: 50%;
+  margin: 0 auto 24px;
+}
+
+.pulse::before, .pulse::after {
+  content: '';
+  position: absolute;
+  inset: -15px;
+  border-radius: 50%;
+  border: 2px solid var(--clr-accent);
+  opacity: 0;
+  animation: radarWave 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.pulse::after { animation-delay: 1s; }
+
+@keyframes radarWave {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+
+@media (max-width: 600px) {
+  .casinoGrid { grid-template-columns: 1fr; }
+  .stepBlock { padding: 24px; }
+}

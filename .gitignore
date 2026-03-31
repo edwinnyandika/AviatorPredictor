@@ -16,6 +16,8 @@ dist/
 __pycache__/
 *.py[cod]
 .venv/
+venv/
+backend/venv/
 *.egg-info/
 
 # Environment
@@ -26,3 +28,19 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Keys and Secrets
+# Firebase service account keys
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+firebase-admin*.json
+
+# Keys and certificates
+*.pem
+*.key
+*.p12
+
+# Environment files — NEVER commit these
+backend/.env
+frontend/.env.local
+*.env
