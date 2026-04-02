@@ -9,8 +9,8 @@
       <stop offset="100%" stop-color="#ff6b35" />
     </linearGradient>
   </defs>
-  <rect width="512" height="512" fill="#08090d" rx="128" />
-  <circle cx="256" cy="256" r="200" fill="url(#glow)" opacity="0.3" />
+  <rect width="512" height="512" fill="#000000" rx="96" />
+  <circle cx="256" cy="256" r="200" fill="url(#glow)" opacity="0.6" />
   <path d="M100 256 L440 100 L300 440 L240 280 Z" fill="url(#planeGrad)" />
   <path d="M100 256 L240 280 L200 360 Z" fill="#f7c59f" />
 </svg>

@@ -1,169 +1,135 @@
 /* ═══════════════════════════════════════════════════════════════
-   Pricing (Directory/Academy) Awwwards Style
+   Pricing - Solid Grid High-End Layout
    ═══════════════════════════════════════════════════════════════ */
 
-.wrapper {
-  padding: 160px 24px 120px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #000;
-  color: #fff;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.header {
-  text-align: center;
-  max-width: 800px;
-  margin-bottom: 100px;
-}
-
-.title {
-  font-size: clamp(3rem, 6vw, 5.5rem);
-  font-weight: 300;
-  margin-bottom: 24px;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.subtitle {
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 300;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  max-width: 1100px;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.card {
-  padding: 80px 60px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: background var(--t-base);
-}
-
-.card:first-child {
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.planName {
-  font-size: 1.5rem;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 16px;
-  color: rgba(255,255,255,0.8);
-}
-
-.price {
-  font-size: clamp(4rem, 6vw, 6rem);
-  font-weight: 400;
-  margin-bottom: 48px;
-  letter-spacing: -0.05em;
-  line-height: 1;
-}
-
-.period {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0;
-  font-weight: 300;
-}
-
-.features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 64px 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.features li {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 1.05rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.features svg {
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.excluded {
-  color: rgba(255, 255, 255, 0.3) !important;
-}
-
-.excluded svg {
-  color: rgba(255, 255, 255, 0.3) !important;
-}
-
-.btn {
-  width: 100%;
-  padding: 24px;
-  font-size: 1rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all var(--t-fast);
-  cursor: pointer;
-  border: none;
-  font-family: var(--font-inter);
-}
-
-.btnFree {
-  background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btnFree:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.btnPro {
-  background: #fff;
-  color: #000;
-}
-
-.btnPro:hover {
-  background: #e0e0e0;
-}
-
-.proCard {
-  background: #000;
-}
-
-.proBadge {
-  position: absolute;
-  top: 32px;
-  right: 60px;
-  font-size: 0.75rem;
-  padding: 6px 12px;
-  border: 1px solid #fff;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-}
-
-@media (max-width: 900px) {
-  .grid { grid-template-columns: 1fr; border-right: none; border-bottom: none; }
-  .card:first-child { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .wrapper { padding: 120px 16px 80px; }
-  .card { padding: 48px 32px; }
-  .proBadge { top: 24px; right: 32px; }
-}
+   .wrapper {
+    padding: 160px 24px 120px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .header {
+    text-align: center;
+    max-width: 800px;
+    margin-bottom: 80px;
+  }
+  
+  .title {
+    margin-bottom: 24px;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    letter-spacing: -0.02em;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+    color: var(--clr-text-muted);
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    max-width: 1000px;
+    width: 100%;
+  }
+  
+  .card {
+    background: var(--clr-panel);
+    border: 2px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform var(--t-base), box-shadow var(--t-base);
+  }
+  
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow);
+  }
+  
+  .proCard {
+    border-color: var(--clr-accent);
+    background: var(--clr-bg);
+  }
+  
+  .proCard:hover {
+    box-shadow: var(--shadow-accent);
+  }
+  
+  .planName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  
+  .price {
+    font-size: clamp(3.5rem, 5vw, 5rem);
+    font-weight: 800;
+    margin-bottom: 40px;
+    line-height: 1;
+  }
+  
+  .period {
+    font-size: 1rem;
+    color: var(--clr-text-muted);
+    font-weight: 400;
+  }
+  
+  .features {
+    list-style: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  
+  .features li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  .features svg {
+    color: var(--clr-accent);
+    flex-shrink: 0;
+  }
+  
+  .excluded {
+    color: var(--clr-text-dim);
+  }
+  
+  .excluded svg {
+    color: var(--clr-border-hover);
+  }
+  
+  .btnActions {
+    width: 100%;
+  }
+  
+  .proBadge {
+    position: absolute;
+    top: -16px;
+    right: 32px;
+    background: var(--clr-accent);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 14px rgba(255, 95, 31, 0.4);
+  }
+  
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; gap: 48px; }
+    .wrapper { padding: 120px 16px 80px; }
+    .card { padding: 32px; }
+  }
